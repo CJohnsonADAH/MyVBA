@@ -491,23 +491,33 @@ End Function
 'Requires Tools > References > Microsoft Visual Basic for Applications Extensibility Library for VBComponent
 'Requires Tools > References > Microsoft Office ... Object Library for FileDialog
 Public Sub ExportAllCode(Optional ByVal Path As String)
-
+    
+    Dim P As VBProject
     Dim C As VBComponent
     Dim Sfx As String
 
     Dim sDestinationFolder As String
     Dim dlgDestinationFolder As FileDialog
-                    
-    Set dlgDestinationFolder = Application.FileDialog(msoFileDialogFolderPicker): With dlgDestinationFolder
-        .Title = "Export Destination Folder"
-        .InitialFileName = IIf(Len(Path) > 0, Path, CurrentProject.Path)
-    End With
+    
+    If Len(Path) > 0 Then
+        Let sDestinationFolder = Path
+    Else
+    
+        Set dlgDestinationFolder = Application.FileDialog(msoFileDialogFolderPicker): With dlgDestinationFolder
+            .Title = "Export Destination Folder"
+            .InitialFileName = IIf(Len(Path) > 0, Path, CurrentProject.Path)
+        End With
                 
-    If dlgDestinationFolder.Show Then
-        Let sDestinationFolder = dlgDestinationFolder.SelectedItems(1)
+        If dlgDestinationFolder.Show Then
+            Let sDestinationFolder = dlgDestinationFolder.SelectedItems(1)
+        End If
+    End If
+    
+    If Len(sDestinationFolder) > 0 Then
 
-        For Each C In Application.VBE.VBProjects(1).VBComponents
-            Select Case C.Type
+        For Each P In Application.VBE.VBProjects
+            For Each C In P.VBComponents
+                Select Case C.Type
                 Case vbext_ct_ClassModule, vbext_ct_Document
                     Sfx = ".cls"
                 Case vbext_ct_MSForm
@@ -516,14 +526,15 @@ Public Sub ExportAllCode(Optional ByVal Path As String)
                     Sfx = ".bas"
                 Case Else
                     Sfx = ""
-            End Select
+                End Select
     
-            If Sfx <> "" Then
-                C.Export _
-                    FileName:=sDestinationFolder & "\" & _
-                    C.Name & Sfx
-            End If
-        Next C
+                If Sfx <> "" Then
+                    C.Export _
+                        FileName:=sDestinationFolder & "\" & _
+                        C.Name & Sfx
+                End If
+            Next C
+        Next P
     End If
     
 End Sub
@@ -551,3 +562,5 @@ Public Sub CommitAllCode(Optional ByVal Path As String)
         Shell PathName:=CFG_GIT_BASH_PATH & " -c '" & CFG_GIT_SCRIPT_PATH & " """ & sDestinationFolder & """'"
     End If
 End Sub
+
+

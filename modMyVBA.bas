@@ -26,6 +26,9 @@ Public Const COLOR_DISABLED As Long = &HC0C0C0      'Light grey
 Public Const COLOR_UNMARKED As Long = &HFFFFFF      'White
 Public Const COLOR_MARKEDERROR As Long = &HC0C0FF   'Light red
 
+Public Const CFG_GIT_BASH_PATH = "C:\Users\charlesw.johnson\Documents\GitWin64\git-bash.exe"
+Public Const CFG_GIT_SCRIPT_PATH = "/m/git-add-commit.bash"
+
 '**
 '* DebugDump: Utility Function mainly for use in the Immediate pane to more easily display a
 '* bunch of different kinds of objects and collections of objects in VBA
@@ -56,6 +59,19 @@ Sub DebugDump(v As Variant)
         Debug.Print TypeName(v), v
     End If
 End Sub
+
+Public Function Merge(ParamArray Value() As Variant) As Collection
+    Dim I As Long
+    Dim Item As Variant
+    
+    Set Merge = New Collection
+    
+    For I = LBound(Value) To UBound(Value)
+        For Each Item In Value(I)
+            Merge.Add Item
+        Next Item
+    Next I
+End Function
 
 Public Function Coll(ParamArray Value() As Variant) As Collection
     Dim I As Long
@@ -472,6 +488,8 @@ End Function
 
 'Derived from code posted at https://stackoverflow.com/questions/16948215/exporting-ms-access-forms-and-class-modules-recursively-to-text-files
 'Modified to allow the user to set a desired path
+'Requires Tools > References > Microsoft Visual Basic for Applications Extensibility Library for VBComponent
+'Requires Tools > References > Microsoft Office ... Object Library for FileDialog
 Public Sub ExportAllCode(Optional ByVal Path As String)
 
     Dim C As VBComponent
@@ -508,4 +526,28 @@ Public Sub ExportAllCode(Optional ByVal Path As String)
         Next C
     End If
     
+End Sub
+
+Public Sub CommitAllCode(Optional ByVal Path As String)
+    Dim sDestinationFolder As String
+    Dim dlgDestinationFolder As FileDialog
+    
+    If Len(Path) > 0 Then
+        Let sDestinationFolder = Path
+    Else
+        Set dlgDestinationFolder = Application.FileDialog(msoFileDialogFolderPicker): With dlgDestinationFolder
+            .Title = "Export Destination Folder"
+            .InitialFileName = IIf(Len(Path) > 0, Path, CurrentProject.Path)
+        End With
+                    
+        If dlgDestinationFolder.Show Then
+            Let sDestinationFolder = dlgDestinationFolder.SelectedItems(1)
+        End If
+    End If
+    
+    If Len(sDestinationFolder) > 0 Then
+        ExportAllCode Path:=sDestinationFolder
+        
+        Shell PathName:=CFG_GIT_BASH_PATH & " -c '" & CFG_GIT_SCRIPT_PATH & " """ & sDestinationFolder & """'"
+    End If
 End Sub

@@ -26,9 +26,6 @@ Public Const COLOR_DISABLED As Long = &HC0C0C0      'Light grey
 Public Const COLOR_UNMARKED As Long = &HFFFFFF      'White
 Public Const COLOR_MARKEDERROR As Long = &HC0C0FF   'Light red
 
-Public Const CFG_GIT_BASH_PATH = "C:\Users\charlesw.johnson\Documents\GitWin64\git-bash.exe"
-Public Const CFG_GIT_SCRIPT_PATH = "/m/git-add-commit.bash"
-
 '**
 '* DebugDump: Utility Function mainly for use in the Immediate pane to more easily display a
 '* bunch of different kinds of objects and collections of objects in VBA
@@ -485,82 +482,4 @@ Public Function CreateGuidString()
         End If
     End If
 End Function
-
-'Derived from code posted at https://stackoverflow.com/questions/16948215/exporting-ms-access-forms-and-class-modules-recursively-to-text-files
-'Modified to allow the user to set a desired path
-'Requires Tools > References > Microsoft Visual Basic for Applications Extensibility Library for VBComponent
-'Requires Tools > References > Microsoft Office ... Object Library for FileDialog
-Public Sub ExportAllCode(Optional ByVal Path As String)
-    
-    Dim P As VBProject
-    Dim C As VBComponent
-    Dim Sfx As String
-
-    Dim sDestinationFolder As String
-    Dim dlgDestinationFolder As FileDialog
-    
-    If Len(Path) > 0 Then
-        Let sDestinationFolder = Path
-    Else
-    
-        Set dlgDestinationFolder = Application.FileDialog(msoFileDialogFolderPicker): With dlgDestinationFolder
-            .Title = "Export Destination Folder"
-            .InitialFileName = IIf(Len(Path) > 0, Path, CurrentProject.Path)
-        End With
-                
-        If dlgDestinationFolder.Show Then
-            Let sDestinationFolder = dlgDestinationFolder.SelectedItems(1)
-        End If
-    End If
-    
-    If Len(sDestinationFolder) > 0 Then
-
-        For Each P In Application.VBE.VBProjects
-            For Each C In P.VBComponents
-                Select Case C.Type
-                Case vbext_ct_ClassModule, vbext_ct_Document
-                    Sfx = ".cls"
-                Case vbext_ct_MSForm
-                    Sfx = ".frm"
-                Case vbext_ct_StdModule
-                    Sfx = ".bas"
-                Case Else
-                    Sfx = ""
-                End Select
-    
-                If Sfx <> "" Then
-                    C.Export _
-                        FileName:=sDestinationFolder & "\" & _
-                        C.Name & Sfx
-                End If
-            Next C
-        Next P
-    End If
-    
-End Sub
-
-Public Sub CommitAllCode(Optional ByVal Path As String)
-    Dim sDestinationFolder As String
-    Dim dlgDestinationFolder As FileDialog
-    
-    If Len(Path) > 0 Then
-        Let sDestinationFolder = Path
-    Else
-        Set dlgDestinationFolder = Application.FileDialog(msoFileDialogFolderPicker): With dlgDestinationFolder
-            .Title = "Export Destination Folder"
-            .InitialFileName = IIf(Len(Path) > 0, Path, CurrentProject.Path)
-        End With
-                    
-        If dlgDestinationFolder.Show Then
-            Let sDestinationFolder = dlgDestinationFolder.SelectedItems(1)
-        End If
-    End If
-    
-    If Len(sDestinationFolder) > 0 Then
-        ExportAllCode Path:=sDestinationFolder
-        
-        Shell PathName:=CFG_GIT_BASH_PATH & " -c '" & CFG_GIT_SCRIPT_PATH & " """ & sDestinationFolder & """'"
-    End If
-End Sub
-
 

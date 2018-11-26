@@ -35,7 +35,9 @@ Public Const COLOR_MARKEDERROR As Long = &HC0C0FF   'Light red
 Sub DebugDump(v As Variant)
     Dim vScalar As Variant
     If IsArray(v) Or TypeName(v) = "Collection" Or TypeName(v) = "ISubMatches" Or TypeName(v) = "Fields" Then
-        If IsArray(v) Then
+        If TypeName(v) = "Range" Then
+            Debug.Print TypeName(v.Value), LBound(v.Value), UBound(v.Value)
+        ElseIf IsArray(v) Then
             Debug.Print TypeName(v), LBound(v), UBound(v)
         Else
             Debug.Print TypeName(v), v.Count
@@ -279,7 +281,7 @@ Public Function camelCaseSplitString(ByVal s As String) As Collection
 
     
     Dim cWords As New Collection
-    Dim c0 As String, C As String, c2 As String
+    Dim c0 As String, c As String, c2 As String
     Dim I0 As Integer, I As Integer
     Dim Anchor As Integer
     Dim State As Integer
@@ -303,7 +305,7 @@ NextWord:
         GoTo WordBeginsOnLower
     ElseIf isWhiteSpace.Test(c0) Then
         Anchor = I
-        Let I = I + Len(C)
+        Let I = I + Len(c)
         GoTo NextWord
     Else
         Anchor = I
@@ -312,38 +314,38 @@ NextWord:
 
 WordBeginsOnLower:
     If I > Len(s) Then GoTo NextWord
-    Let c0 = C: Let C = Mid(s, I, 1)
+    Let c0 = c: Let c = Mid(s, I, 1)
     
-    Let I = I + Len(C)
+    Let I = I + Len(c)
     GoTo ContinueWordToUpperBreak
 
 ContinueWordToUpperBreak:
     If I > Len(s) Then GoTo NextWord
-    Let c0 = C: Let C = Mid(s, I, 1)
+    Let c0 = c: Let c = Mid(s, I, 1)
     
-    If isUpper.Test(C) Or isWhiteSpace.Test(C) Then
+    If isUpper.Test(c) Or isWhiteSpace.Test(c) Then
         GoTo ClipWord
     Else
-        I = I + Len(C)
+        I = I + Len(c)
     End If
     GoTo ContinueWordToUpperBreak
     
 WordBeginsOnUpper:
     If I > Len(s) Then GoTo NextWord
-    Let c0 = C: C = Mid(s, I, 1)
+    Let c0 = c: c = Mid(s, I, 1)
 
     'Move ahead to the next character
     'UPPERCase: two uppers in a row
     'MixedCase: one upper, one lower
     Let I = I + 1
-    Let c0 = C: C = Mid(s, I, 1)
+    Let c0 = c: c = Mid(s, I, 1)
     
-    If isLower.Test(C) Then
-        Let I = I + Len(C)
+    If isLower.Test(c) Then
+        Let I = I + Len(c)
         GoTo ContinueWordToUpperBreak
-    ElseIf isUpper.Test(C) Then
+    ElseIf isUpper.Test(c) Then
         GoTo ContinueWordToUpperLowerBreak
-    ElseIf Not isWhiteSpace.Test(C) Then
+    ElseIf Not isWhiteSpace.Test(c) Then
         GoTo ContinueWordToUpperLowerBreak
     Else
         GoTo ClipWord
@@ -351,11 +353,11 @@ WordBeginsOnUpper:
     
 ContinueWordToUpperLowerBreak:
     If I > Len(s) Then GoTo NextWord
-    Let c0 = C: C = Mid(s, I, 1): c2 = Mid(s, I, 2)
+    Let c0 = c: c = Mid(s, I, 1): c2 = Mid(s, I, 2)
 
-    If isUpperLower.Test(c2) Or isWhiteSpace.Test(C) Then
+    If isUpperLower.Test(c2) Or isWhiteSpace.Test(c) Then
         GoTo ClipWord
-    ElseIf isAlpha.Test(C) Then
+    ElseIf isAlpha.Test(c) Then
         I = I + 1
         GoTo ContinueWordToUpperLowerBreak
     Else
@@ -365,9 +367,9 @@ ContinueWordToUpperLowerBreak:
     
 FromOtherToNextWord:
     If I > Len(s) Then GoTo NextWord
-    C = Mid(s, I, 1)
+    c = Mid(s, I, 1)
     
-    If isUpper.Test(C) Or isLower.Test(C) Or isWhiteSpace.Test(C) Then
+    If isUpper.Test(c) Or isLower.Test(c) Or isWhiteSpace.Test(c) Then
         GoTo ClipWord
     Else
         I = I + 1
@@ -393,6 +395,7 @@ End Function
 '* preserve case for the rest of the word).
 '*
 '* @param String s The camelCase text to split into words
+'* @param Boolean ForceLower If words include uppercase letters after the first, should they be converted to lowercase?
 '*
 '* @return Collection of String items for each word
 '**

@@ -64,7 +64,7 @@ Public Function RegexComponents(Value As Variant, Pattern As String, Optional By
     Dim cMatches As Object
     Dim iMatch As Variant
     Dim iSubMatch As Variant
-    Dim index As Integer
+    Dim Index As Integer
     Dim iMatchIndex As Integer
     Dim dComponents As Scripting.Dictionary
     
@@ -99,16 +99,16 @@ Public Function RegexComponents(Value As Variant, Pattern As String, Optional By
             '$0 = whole regex match
             dComponents.Add Item:=iMatch.Value, Key:=0
             
-            Let index = 0
+            Let Index = 0
             For Each iSubMatch In iMatch.SubMatches
-                Let index = index + 1
+                Let Index = Index + 1
                 
                 '$1, $2, $3, ... = components matched
-                dComponents.Add Item:=iSubMatch, Key:=index
+                dComponents.Add Item:=iSubMatch, Key:=Index
                 
                 If Not NamedGroups Is Nothing Then
-                    If NamedGroups.Exists(index) Then
-                        dComponents.Add Item:=iSubMatch, Key:=NamedGroups.Item(index)
+                    If NamedGroups.Exists(Index) Then
+                        dComponents.Add Item:=iSubMatch, Key:=NamedGroups.Item(Index)
                     End If
                 End If
             Next iSubMatch

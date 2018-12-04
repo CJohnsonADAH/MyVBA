@@ -1,4 +1,17 @@
 Attribute VB_Name = "modMyVBA"
+'**
+'* modMyVBA
+'*
+'* @version 2018.1126
+'*
+'* @uses Scripting.Dictionary {420B2830-E718-11CF-893D-00A0C9054228}/1/0
+'*
+'* @doc README.txt MyVBA
+'* MyVBA is a collection of tools I use across a whole bunch of projects to make routine problem-solving in VBA
+'* just a bit quicker, more natural and make the code more readable. Some of the tools herein are mainly to help
+'* with debugging, version control, and other development tasks within the VBA IDE. Other tools are here to make
+'* VBA coding somewhat more like coding in other dynamic scripting languages.
+'**
 Option Explicit
 
 ' No VT_GUID available so must declare type GUID
@@ -485,4 +498,65 @@ Public Function CreateGuidString()
         End If
     End If
 End Function
+
+Public Function getUserName() As String
+    Dim sUserName As String
+    
+    Let sUserName = Environ$("Username")
+    If Len(sUserName) = 0 Then
+        Let sUserName = Application.CurrentUser
+    End If
+    
+    Let getUserName = sUserName
+End Function
+
+Public Function GetOption(SettingName As String, Optional Default As Variant) As Variant
+    Dim v As Variant
+    Dim Qdf As DAO.QueryDef
+    Dim Rs As DAO.Recordset
+    
+    Dim I As Integer
+    Dim N As Integer
+    Dim sSettingName As String
+    Dim asSettingName() As String
+    
+    Let asSettingName = Split(Expression:=SettingName, Delimiter:="|")
+    If UBound(asSettingName) >= LBound(asSettingName) Then
+        
+        Let v = Empty
+        Let N = UBound(asSettingName)
+        
+        For I = LBound(asSettingName) To N
+            Let sSettingName = asSettingName(I)
+            
+            Set Qdf = CurrentDb.CreateQueryDef(Name:="", SQLText:="SELECT * FROM CommonSettings WHERE SettingName=[paramSettingName]")
+            Let Qdf.Parameters("paramSettingName") = sSettingName
+    
+            Set Rs = Qdf.OpenRecordset
+    
+            If Not Rs.EOF Then
+                Let v = Rs!SettingValue.Value
+            End If
+            
+            Rs.Close
+            Set Rs = Nothing
+            Set Qdf = Nothing
+            
+            If Not IsEmpty(v) Then
+                Exit For
+            End If
+        Next I
+    
+        If IsEmpty(v) Then
+            'No such setting in the table
+            If Not IsMissing(Default) Then
+                Let v = Default
+            End If
+            
+        End If
+        
+        Let GetOption = v
+    End If
+End Function
+
 

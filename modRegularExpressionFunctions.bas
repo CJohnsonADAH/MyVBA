@@ -14,24 +14,24 @@ Option Explicit
 Public Function RegexMatch(Value As Variant, Pattern As String, Optional ByVal MatchCase As Boolean) As Boolean
     If IsNull(Value) Then Exit Function
     ' Using a static, we avoid re-creating the same regex object for every call '
-    Static Regex As Object
+    Static regex As Object
     ' Initialise the Regex object '
-    If Regex Is Nothing Then
-        Set Regex = CreateObject("vbscript.regexp")
-        With Regex
+    If regex Is Nothing Then
+        Set regex = CreateObject("vbscript.regexp")
+        With regex
             .Global = True
             .MultiLine = True
         End With
     End If
 
-    With Regex
+    With regex
             .IgnoreCase = Not MatchCase
     End With
 
     ' Update the regex pattern if it has changed since last time we were called '
-    If Regex.Pattern <> Pattern Then Regex.Pattern = Pattern
+    If regex.Pattern <> Pattern Then regex.Pattern = Pattern
     ' Test the value against the pattern '
-    RegexMatch = Regex.Test(Value)
+    RegexMatch = regex.Test(Value)
 End Function
 
 '**
@@ -71,25 +71,25 @@ Public Function RegexComponents(Value As Variant, Pattern As String, Optional By
     If IsNull(Value) Then Exit Function
     
     ' Using a static, we avoid re-creating the same regex object for every call '
-    Static Regex As Object
+    Static regex As Object
     
     ' Initialise the Regex object '
-    If Regex Is Nothing Then
-        Set Regex = CreateObject("vbscript.regexp")
-        With Regex
+    If regex Is Nothing Then
+        Set regex = CreateObject("vbscript.regexp")
+        With regex
             .Global = True
             .MultiLine = True
         End With
     End If
     
-    With Regex
+    With regex
         .IgnoreCase = Not MatchCase
     End With
     
     ' Update the regex pattern if it has changed since last time we were called '
-    If Regex.Pattern <> Pattern Then Regex.Pattern = Pattern
+    If regex.Pattern <> Pattern Then regex.Pattern = Pattern
     ' Test the value against the pattern '
-    Set cMatches = Regex.Execute(Value)
+    Set cMatches = regex.Execute(Value)
     
     Let iMatchIndex = 0
     For Each iMatch In cMatches
@@ -122,7 +122,7 @@ End Function
 
 Public Function RegexReplace(Value As Variant, Pattern As String, Replace As String, Optional ByVal MatchCase As Boolean, Optional ByVal OnlyOne As Boolean) As String
     ' Using a static, we avoid re-creating the same regex object for every call '
-    Static Regex As RegExp
+    Static regex As RegExp
     
     Dim hasMatch As Boolean
     Dim Result As String
@@ -130,21 +130,21 @@ Public Function RegexReplace(Value As Variant, Pattern As String, Replace As Str
     If IsNull(Value) Then Exit Function
     
     ' Initialise the Regex object '
-    If Regex Is Nothing Then
-        Set Regex = New RegExp
-        With Regex
+    If regex Is Nothing Then
+        Set regex = New RegExp
+        With regex
             .MultiLine = True
         End With
     End If
     
     Result = CStr(Value)
-    With Regex
+    With regex
         .Pattern = Pattern
         .Global = Not OnlyOne
         .IgnoreCase = Not MatchCase
     End With
             
-    RegexReplace = Regex.Replace(Result, Replace)
+    RegexReplace = regex.Replace(Result, Replace)
 
 End Function
 
